@@ -122,6 +122,7 @@ _processHashTags = function( tweetText ) {
 _insertHashTags = function( tweetId, hashTags ) {
 	var queries = [];
 	for(var j = 0 ; j < hashTags.length; j++) {
+		hashTags[j] = hashTags[j].replace(/[^a-zA-Z ]/g, "");
 		var query = 'insert into hashtags values(\'' + tweetId + '\',\'' + hashTags[j] + '\');';
 		queries.push(query);
 	}

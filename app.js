@@ -49,7 +49,7 @@ app.use(function(req, res, next) {
 		authPromise.done( function ( user ) {
 			req.user = user;
 			delete req.user.password; // delete the password from the session
-			req.session.user = user;  //refresh the session value
+			req.session.user = user;  // refresh the session value
 			res.locals.user = user;
 			next();
 		});

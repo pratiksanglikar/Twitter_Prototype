@@ -1,10 +1,10 @@
 <div>
     <div>
-        <textarea   type="text"
-                    maxlength="140"
-                    ng-model="newTweet"
-                    class="postTweet"
-                    placeholder="What's happening?">
+        <textarea type="text"
+                  maxlength="140"
+                  ng-model="newTweet"
+                  class="postTweet"
+                  placeholder="What's happening?">
         </textarea>
         <div class="postTweet-button">
             <button class="btn btn-primary tweet-button" ng-click="postTweet()">Tweet</button>
@@ -17,11 +17,22 @@
             <span class="tweet-tweeter-handle">@{{feedItem.twitterHandle}}</span>
             <span class="tweet-tweeter-handle">&nbsp;.&nbsp;{{feedItem.created_on}}</span>
 
-            <p  class="tweet-tweet-text"
-                ng-bind-html="trustHTML(feedItem.tweet_text)"
-                hashtag
-                term-click="tagTermClick($event)">
-            </p>
+            <div class="container width-inherit">
+                <div class="col-md-10 tweet-text-bx">
+                    <p class="tweet-tweet-text"
+                       ng-bind-html="trustHTML(feedItem.tweet_text)"
+                       hashtag
+                       term-click="tagTermClick($event)">
+                    </p>
+                </div>
+                <div class="col-md-2 retweet-button-div">
+                    <button
+                            class="retweet-button btn btn-primary btn-sm"
+                            ng-click="retweet(feedItem.tweet_id)">
+                        retweet
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>

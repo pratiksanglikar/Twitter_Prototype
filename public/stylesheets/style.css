@@ -347,3 +347,19 @@ form input.ng-valid.ng-touched {
 .tweet-text-hashtag {
     color: #2FC2EF;
 }
+
+.retweet-button {
+    width: 76px;
+    height: 20px;
+    font-size: 12px;
+    padding: 0 !important;
+}
+
+.retweet-button-div {
+    text-align: right;
+    width: inherit !important;
+}
+
+.tweet-text-bx {
+    margin-top:5px;
+}
