@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular-route.js"></script>
+    <script src="/javascripts/app.js"></script>
+</head>
+<body ng-app="Twitter" ng-controller="MainControl">
+    <div class="container">
+        <div id="top_header_div" class="twitter-header">
+            <div class="container">
+                <div class="col-md-10">
+
+                </div>
+                <div class="col-md-2">
+                    <button class="header-buttons" ng-click="redirectLogin()">Sign In</button>
+                </div>
+            </div>
+            <div class="container">
+                <div class="col-md-8 col-md-offset-2">
+                    <h2>
+                        See what’s happening right now.
+                    </h2>
+                    <p>
+                        Find community, conversation and inspiration about the things you love.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container" ng-controller="UserController">
+        <div id="sign_up_content_div" class="twitter-main-content-div col-md-8 col-md-offset-2">
+            <h1>Join Twitter Today!</h1>
+            <form name="signupform" novalidate class="simple-form form-horizontal">
+                <div class="form-group">
+                    <div class="col-xs-4">
+                        <input type="text"
+                               class="form-control"
+                               id="input-twitterHandle"
+                               name="twitterHandle"
+                               ng-model="user.twitterHandle"
+                               ng-model-options="{ updateOn: 'blur' }"
+                               placeholder="Choose your twitter handle"
+                               twitterHandle1
+                               required>
+                    </div>
+                    <div class="col-xs-8"
+                         ng-show="signupform.$submitted || signupform.twitterHandle.$touched">
+                        <div ng-show="signupform.twitterHandle.$error.required">
+                            Please choose a Twitter Handle!
+                        </div>
+                        <span ng-show="signupform.twitterHandle.$pending.isAvailable">Checking if this handle is available...</span>
+                        <span ng-show="signupform.twitterHandle.$error.isAvailable">This handle is already taken!</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-4">
+                        <input type="text"
+                               class="form-control"
+                               id="input-firstName"
+                               name="firstName"
+                               ng-model="user.firstName"
+                               placeholder="First Name"
+                               required>
+                    </div>
+                    <div class="col-xs-8"
+                         ng-show="signupform.$submitted || signupform.firstName.$touched">
+                        <div ng-show="signupform.firstName.$error.required">
+                            Please tell us your name!
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-4">
+                        <input type="text"
+                               class="form-control"
+                               id="input-lastName"
+                               name="lastName"
+                               ng-model="user.lastName"
+                               placeholder="Last Name"
+                               required>
+                    </div>
+                    <div class="col-xs-8"
+                         ng-show="signupform.$submitted || signupform.lastName.$touched">
+                        <div ng-show="signupform.lastName.$error.required">
+                            Please tell us your name!
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-4">
+                        <input type="email"
+                               class="form-control"
+                               id="input-email"
+                               name="emailid"
+                               ng-model="user.email"
+                               ng-model-options="{ updateOn: 'blur' }"
+                               placeholder="Email"
+                               emailid
+                               required>
+                    </div>
+                    <div class="col-xs-8"
+                         ng-show="signupform.$submitted || signupform.email.$touched">
+                        <div ng-show="signupform.emailid.$error.required">
+                            Please tell us your email. Promise, we won't spam!
+                        </div>
+                        <div ng-show="signupform.emailid.$error.email">
+                            Don't lie! That's not a valid email address!
+                        </div>
+                        <div ng-show="signupform.emailid.$error.alreadyUsed">
+                            Email already registered!
+                        </div>
+                        <div ng-show="signupform.emailid.$pending.alreadyUsed">
+                            Checking if email is already being used!
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-4">
+                        <input type="password"
+                               class="form-control"
+                               id="input-password"
+                               name="password"
+                               ng-model="user.password"
+                               placeholder="Password"
+                               required>
+                    </div>
+                    <div class="col-xs-8"
+                         ng-show="signupform.$submitted || signupform.password.$touched">
+                        <div ng-show="signupform.password.$error.required">
+                            Please choose a Password!
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-4">
+                        <input type="password"
+                               class="form-control"
+                               id="input-confirmPassword"
+                               name="confirmPassword"
+                               ng-model="user.confirmPassword"
+                               placeholder="Confirm Password"
+                               required>
+                    </div>
+                    <div class="col-xs-8"
+                         ng-show="signupform.$submitted || signupform.confirmPassword.$touched">
+                        <div ng-show="signupform.confirmPassword.$error.required">
+                            Please re-type your password, just to confirm if we got it right!
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-4">
+                        <input type="tel"
+                               class="form-control"
+                               id="input-phoneNumber"
+                               ng-model="user.phoneNumber"
+                               placeholder="Phone">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-4">
+                        <input type="date"
+                               class="form-control"
+                               id="input-birthDate"
+                               name="birthDate"
+                               ng-model="user.birthDate"
+                               placeholder="Birth Date"
+                               required>
+                    </div>
+                    <div class="col-xs-8"
+                         ng-show="signupform.$submitted || signupform.birthDate.$touched">
+                        <div ng-show="signupform.birthDate.$error.required">
+                            Please tell us your birth date!
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-4">
+                        <input type="text"
+                               class="form-control"
+                               id="input-location"
+                               ng-model="user.location"
+                               placeholder="Location">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-offset-2 col-xs-4">
+                        <button type="submit"
+                                class="btn btn-primary"
+                                ng-click="signUp()">
+                            Sign Up!
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

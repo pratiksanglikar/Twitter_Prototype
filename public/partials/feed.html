@@ -1,0 +1,22 @@
+<div>
+    <div>
+        <textarea   type="text"
+                    maxlength="140"
+                    ng-model="newTweet"
+                    class="postTweet"
+                    placeholder="What's happening?">
+        </textarea>
+        <div class="postTweet-button">
+            <button class="btn btn-primary tweet-button" ng-click="postTweet()">Tweet</button>
+            <span class="tweet-remaining-characters">{{140 - newTweet.length}} characters remaining</span>
+        </div>
+    </div>
+    <div ng-show="feed" class="feed">
+        <div data-ng-repeat="feedItem in feed" class="tweet-box">
+            <strong class="tweet-twitter-username">{{feedItem.firstName}}&nbsp;{{feedItem.lastName}}</strong>
+            <span class="tweet-tweeter-handle">@{{feedItem.twitterHandle}}</span>
+            <span class="tweet-tweeter-handle">&nbsp;.&nbsp;{{feedItem.created_on}}</span>
+            <p class="tweet-tweet-text">{{feedItem.tweet_text}}</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,73 @@
+<html ng-app="Twitter">
+    <head>
+        <title> <%=title%> </title>
+        <link rel='stylesheet' href='/stylesheets/style.css'/>
+        <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css"/>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular-route.js"></script>
+        <script src="/javascripts/app.js"></script>
+    </head>
+    <body>
+        <div class="home-page-navbar" data-ng-controller="SearchController">
+            <button
+                    class="home-button"
+                    ng-click="home()">
+                Home
+            </button>
+            <input
+                    type="text"
+                    placeholder="Search"
+                    class="searchbox"
+                    ng-model="searchTerm"
+                    ng-keyup="search($event)">
+            </input>
+            <button class="logout-button"
+                    ng-click="logout()">
+                Sign Out
+            </button>
+        </div>
+        <div class="container">
+            <div class="col-md-4" data-ng-controller="UserController" data-ng-init="getCurrentLoggedInUser()">
+                <div id="currentUser" ng-show="currentUser" class="profile-dashboard">
+                    <div class="container">
+                    <h3>{{currentUser.firstName}}&nbsp;{{currentUser.lastName}}</h3>
+                    <h5>@{{currentUser.twitterHandle}}</h5>
+                    <h5>{{currentUser.location}}</h5>
+                    </div>
+                    <div class="container">
+                        <div class="col-md-3">
+                            <span class="profileStats-header">
+                                TWEETS
+                            </span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="profileStats-header">
+                                FOLLOWERS
+                            </span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="profileStats-header">
+                                FOLLOWING
+                            </span>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="col-md-3">
+                            <span class="profileStats">{{currentUser.tweets}}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="profileStats">{{currentUser.followers}}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="profileStats">{{currentUser.following || 0}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div ng-view> </div>
+
+            </div>
+        </div>
+    </body>
+</html>
