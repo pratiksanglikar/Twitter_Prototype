@@ -4,7 +4,11 @@
             <strong class="tweet-twitter-username">{{feedItem.firstName}}&nbsp;{{feedItem.lastName}}</strong>
             <span class="tweet-tweeter-handle">@{{feedItem.twitterHandle}}</span>
             <span class="tweet-tweeter-handle">&nbsp;.&nbsp;{{feedItem.created_on}}</span>
-            <p class="tweet-tweet-text">{{feedItem.tweet_text}}</p>
+            <p  class="tweet-tweet-text"
+                ng-bind-html="trustHTML(feedItem.tweet_text)"
+                hashtag
+                term-click="tagTermClick($event)">
+            </p>
         </div>
     </div>
     <div ng-show="userSearched">

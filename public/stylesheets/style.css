@@ -343,3 +343,7 @@ form input.ng-valid.ng-touched {
     display: inline-block;
     line-height: normal;
 }
+
+.tweet-text-hashtag {
+    color: #2FC2EF;
+}

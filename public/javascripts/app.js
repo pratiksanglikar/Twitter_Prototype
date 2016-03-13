@@ -3,6 +3,34 @@
  */
 var app = angular.module('Twitter', ["ngRoute"]);
 
+app.directive('hashtag', ['$timeout', '$compile',
+	function($timeout, $compile) {
+		return {
+			restrict: 'A',
+			scope: {
+				tClick: '&termClick'
+			},
+			link: function(scope, element, attrs) {
+				$timeout(function() {
+					var html = element.html();
+
+					if (html === '') {
+						return false;
+					}
+
+					if (attrs.termClick) {
+						html = html.replace(/(^|\s)*#(\w+)/g, '$1<a ng-click="tClick({$event: $event})" class="hashtag">#$2</a>');
+					}
+
+					element.html(html);
+
+					$compile(element.contents())(scope);
+				}, 0);
+			}
+		};
+	}
+]);
+
 app.factory('userservice', function ($q, $http) {
 	var UserService = {
 		signUp: function (data) {
@@ -172,34 +200,44 @@ app.factory('feedservice', function ($q, $http) {
 	return FeedService;
 });
 
-app.controller("FeedController", ["$window", "$http", "$scope", "feedservice", function ($window, $http, $scope, FeedService) {
+app.controller("FeedController", ["$window", "$http", "$scope", "$sce", "$rootScope", "feedservice",
+	function ($window, $http, $scope, $sce, $rootScope, FeedService) {
 
-	init = function () {
-		var promise = FeedService.getFeed();
-		promise.then(function (result) {
-			$scope.feed = result;
-			console.log(result);
-		}, function (error) {
-			$scope.error = error;
-		});
-	}
-
-	$scope.postTweet = function () {
-		console.log('post tweet : ' + $scope.newTweet);
-		if ($scope.newTweet.length === 0) {
-			alert("Please let us know what to tweet!");
-		} else {
-			var promise = FeedService.postTweet($scope.newTweet);
+		init = function () {
+			var promise = FeedService.getFeed();
 			promise.then(function (result) {
-				$scope.newTweet = '';
-				init();
+				var feed = result;
+				$scope.feed = feed;
 			}, function (error) {
-				alert("Ohh snap! There was some error posting your tweet!");
+				$scope.error = error;
 			});
 		}
-	}
-	init();
-}]);
+
+		$scope.postTweet = function () {
+			console.log('post tweet : ' + $scope.newTweet);
+			if ($scope.newTweet.length === 0) {
+				alert("Please let us know what to tweet!");
+			} else {
+				var promise = FeedService.postTweet($scope.newTweet);
+				promise.then(function (result) {
+					$scope.newTweet = '';
+					init();
+				}, function (error) {
+					alert("Ohh snap! There was some error posting your tweet!");
+				});
+			}
+		}
+
+		$rootScope.trustHTML = function (text) {
+			return $sce.trustAsHtml(text);
+		}
+
+		$rootScope.tagTermClick = function(e) {
+			var tagText = e.target.innerText;
+			$rootScope.$broadcast("hashSearch", tagText);
+		};
+		init();
+	}]);
 
 
 app.factory('searchservice', function ($q, $http, $rootScope) {
@@ -222,20 +260,31 @@ app.factory('searchservice', function ($q, $http, $rootScope) {
 	return SearchService;
 });
 
-app.controller("SearchController", ["$http", "$scope", "$window", "searchservice",
-	function ($http, $scope, $window, SearchService) {
+app.controller("SearchController", ["$http", "$scope", "$window","$rootScope", "searchservice",
+	function ($http, $scope, $window, $rootScope,SearchService) {
 		$scope.searchFeed = [];
 		$scope.search = function (event) {
 			if (event.keyCode === 13) {
-				var promise = SearchService.search($scope.searchTerm);
-				promise.then(function (result) {
-					$scope.searchFeed = result.result;
-					$window.location.href = "home#/search";
-				}, function (error) {
-					$scope.error = error;
-				});
+				_search( $scope.searchTerm );
 			}
 		}
+
+		$scope.$on("hashSearch", function (event, hashTag) {
+			_search( hashTag );
+		});
+
+		_search = function ( text ) {
+			var promise = SearchService.search( text );
+			promise.then(function (result) {
+				$scope.searchFeed = result.result;
+				$rootScope.searchFeed = result.result;
+				$window.location.href = "home#/search";
+			}, function (error) {
+				$scope.error = error;
+			});
+			return promise.promise;
+		}
+		
 		$scope.logout = function () {
 			$http({
 				method: 'GET',
@@ -250,7 +299,8 @@ app.controller("SearchController", ["$http", "$scope", "$window", "searchservice
 		}
 	}]);
 
-app.controller("SearchDisplayController", ["$scope", "$window", "userservice", function ($scope, $window, UserService) {
+app.controller("SearchDisplayController", ["$scope", "$window","$rootScope", "userservice",
+	function ($scope, $window, $rootScope, UserService) {
 	$scope.$on("searchDataReceived", function (event, searchData) {
 		if(searchData.result === undefined) {
 			$window.location.href = 'http://localhost:3000/auth/login';
@@ -268,6 +318,10 @@ app.controller("SearchDisplayController", ["$scope", "$window", "userservice", f
 			$scope.userSearched.birthDateYear = birthDate.getUTCFullYear();
 		}
 	});
+
+	init = function() {
+		$scope.feed = $rootScope.searchFeed;
+	}
 
 	$scope.follow = function () {
 		var promise = UserService.follow( $scope.userSearched.twitterHandle );
@@ -288,6 +342,8 @@ app.controller("SearchDisplayController", ["$scope", "$window", "userservice", f
 			console.log("ERROR : " + error);
 		});
 	}
+
+	init();
 }]);
 
 app.config(function ($routeProvider) {
