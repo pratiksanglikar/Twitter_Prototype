@@ -89,10 +89,14 @@ exports.findUser = function( twitterHandle ) {
 	queries[3] = "SELECT count(*) from followers where followedBy = \'" + twitterHandle + "\'";
 	var promise = mysqlHandler.executeTransaction( queries );
 	promise.done( function( results ) {
-		results[0][0].followers = results[1][0]["count(*)"];
-		results[0][0].tweets = results[2][0]["count(*)"];
-		results[0][0].following = results[3][0]["count(*)"];
-		deferred.resolve(results[0]);
+		if(results[0][0]){
+			results[0][0].followers = results[1][0]["count(*)"];
+			results[0][0].tweets = results[2][0]["count(*)"];
+			results[0][0].following = results[3][0]["count(*)"];
+			deferred.resolve(results[0]);
+		} else {
+			deferred.reject("User not found!");
+		}
 	}, function ( error ) {
 		deferred.reject( error );
 	});

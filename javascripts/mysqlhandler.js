@@ -1,6 +1,7 @@
 /**
  * Created by pratiksanglikar on 02/03/16.
  */
+pool = null;
 var mysql = require('mysql');
 var Q = require('q');
 
@@ -83,7 +84,7 @@ exports.executeTransaction = function( queries ) {
 	return deferred.promise;
 }
 
-var pool = null;
+
 
 /**
  * returns the current database connection pool
