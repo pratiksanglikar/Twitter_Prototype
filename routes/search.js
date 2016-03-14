@@ -7,6 +7,9 @@ var Userhandler = require('../javascripts/userhandler');
 var FeedHandler = require('../javascripts/feedhandler');
 var Auth = require('./authentication');
 
+/**
+ * searches the given term and returns the results.
+ */
 router.get('/:searchTerm', Auth.requireLogin, function (req, res) {
 	var searchTerm = req.params.searchTerm;
 	if (searchTerm.startsWith('@')) {

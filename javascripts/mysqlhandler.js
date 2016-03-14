@@ -4,6 +4,11 @@
 var mysql = require('mysql');
 var Q = require('q');
 
+/**
+ * executes the query provided in sqlQuery and returns the result.
+ * @param sqlQuery
+ * @returns {promise}
+ */
 exports.executeQuery = function( sqlQuery ) {
 	//console.log("Executing query : " + sqlQuery);
 	var promise = _getConnection();
@@ -32,6 +37,12 @@ exports.executeQuery = function( sqlQuery ) {
 	return deferred.promise;
 }
 
+/**
+ * executes the set of queries as a transaction provided in an array.
+ * Note: Even if any query fails to execute, the whole transaction is rollbacked.
+ * @param queries - Array of queries.
+ * @returns {promise}
+ */
 exports.executeTransaction = function( queries ) {
 	var deferred = Q.defer();
 	var connectionPromise = _getConnection();
@@ -67,7 +78,6 @@ exports.executeTransaction = function( queries ) {
 		});
 	}, function ( error ) {
 		deferred.reject( error );
-		_releaseConnection(connection);
 	});
 
 	return deferred.promise;
@@ -75,6 +85,11 @@ exports.executeTransaction = function( queries ) {
 
 var pool = null;
 
+/**
+ * returns the current database connection pool
+ * @returns {Pool}
+ * @private
+ */
 function _getPool() {
 	if( pool == undefined ) {
 		pool  = _createPool({
@@ -88,10 +103,21 @@ function _getPool() {
 	return pool;
 }
 
+/**
+ * creates the database connection pool
+ * @param config
+ * @returns {{getConnection: pool.getConnection, release: pool.release}}
+ * @private
+ */
 function _createPool( config ) {
 	console.log("Creating pool of size : " + config.poolsize);
 	var pool = {
 		_connections: [],
+
+		/**
+		 * gets one connection from connection pool.
+		 * @returns {connection}
+		 */
 		getConnection: function () {
 			var connection = this._connections.shift();
 			var def = Q.defer();
@@ -105,6 +131,10 @@ function _createPool( config ) {
 			return def.promise;
 		},
 
+		/**
+		 * releases the connection acquired from the connection pool
+		 * @param connection
+		 */
 		release: function( connection ) {
 			connection.end();
 			this._connections.push( connection );
@@ -123,6 +153,11 @@ function _createPool( config ) {
 	return pool;
 }
 
+/**
+ * returns a connection from the database connection pool.
+ * @returns {connection}
+ * @private
+ */
 function _getConnection() {
 	pool = _getPool();
 	var deferred = Q.defer();
@@ -137,6 +172,11 @@ function _getConnection() {
 	return deferred.promise;
 }
 
+/**
+ * releases the connection acquired from database connection pool.
+ * @param connection
+ * @private
+ */
 function _releaseConnection( connection ) {
 	pool = _getPool();
 	try {

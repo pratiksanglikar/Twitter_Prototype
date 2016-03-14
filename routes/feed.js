@@ -7,18 +7,24 @@ var FeedHandler = require('../javascripts/feedhandler');
 var Auth = require('./authentication');
 var UserHandler = require('../javascripts/userhandler');
 
-/* GET home page. */
-router.get('/', Auth.requireLogin, function(req, res, next) {
+/**
+ * calculates the feed for given user.
+ */
+router.get('/', Auth.requireLogin, function(req, res) {
 	var twitterHandle = req.user.twitterHandle;
 	var promise = FeedHandler.createFeed(twitterHandle);
 	promise.done( function ( result ) {
 		res.send({"success" : true, "result" : result });
 	}, function( error ) {
 		res.send({"success" : false, "error" : error });
-	})
+	});
 });
 
-router.get('/:twitterHandle', Auth.requireLogin, function(req, res, next) {
+/**
+ * gets the tweets of given twitterHandle
+ * if the loggedInUser is following required user.
+ */
+router.get('/:twitterHandle', Auth.requireLogin, function(req, res) {
 	var twitterHandle = req.user.twitterHandle;
 	var personRequested = req.params.twitterHandle;
 	twitterHandle = twitterHandle.trim().replace('@','');
@@ -36,6 +42,9 @@ router.get('/:twitterHandle', Auth.requireLogin, function(req, res, next) {
 	});
 });
 
+/**
+ * posts new tweet for given user.
+ */
 router.post('/', Auth.requireLogin, function(req, res, next) {
 	var twitterHandle = req.user.twitterHandle;
 	var twitterText = req.body.twitterText;
@@ -47,6 +56,9 @@ router.post('/', Auth.requireLogin, function(req, res, next) {
 	});
 });
 
+/**
+ * retweets the tweet with given tweet_id.
+ */
 router.post('/retweet/:tweet_id', Auth.requireLogin, function (req, res, next) {
 	var twitterHandle = req.user.twitterHandle;
 	var tweet_id = req.params.tweet_id;

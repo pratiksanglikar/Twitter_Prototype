@@ -3,11 +3,9 @@ var router = express.Router();
 var userhandler = require('../javascripts/userhandler');
 var Auth = require('./authentication');
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
-
+/**
+ * gets the information of user specified by twitterHandle
+ */
 router.get('/find/:twitterHandle', Auth.requireLogin, function(req, res, next) {
 	var resultPromise = userhandler.findUser( req.param.twitterHandle );
 	resultPromise.done(function( result ) {
@@ -17,6 +15,9 @@ router.get('/find/:twitterHandle', Auth.requireLogin, function(req, res, next) {
 	});
 });
 
+/**
+ * gets the information about the current logged in user.
+ */
 router.get("/currentuser", Auth.requireLogin, function( req, res) {
 	var promise = userhandler.findUser(req.user.twitterHandle);
 	promise.done(function( result ) {
@@ -27,6 +28,9 @@ router.get("/currentuser", Auth.requireLogin, function( req, res) {
 
 });
 
+/**
+ * sign ups the new user.
+ */
 router.post('/', function(req, res, next) {
     var info = {
             firstName:        req.body.firstName,
@@ -50,6 +54,9 @@ router.post('/', function(req, res, next) {
     });
 });
 
+/**
+ * allows the logged in user to follow another user specified by twitterHandle.
+ */
 router.get('/follow/:twitterHandle', Auth.requireLogin, function (req, res, next) {
 	var ownHandle = req.user.twitterHandle;
 	var theirHandle = req.params.twitterHandle;
@@ -61,6 +68,9 @@ router.get('/follow/:twitterHandle', Auth.requireLogin, function (req, res, next
 	});
 });
 
+/**
+ * allows the user to unfollow another user specified by twitterHandle.
+ */
 router.get('/unfollow/:twitterHandle', Auth.requireLogin, function (req, res, next) {
 	var ownHandle = req.user.twitterHandle;
 	var theirHandle = req.params.twitterHandle;
@@ -72,6 +82,9 @@ router.get('/unfollow/:twitterHandle', Auth.requireLogin, function (req, res, ne
 	});
 });
 
+/**
+ * checks if the twitterHandle specified is already in use.
+ */
 router.get('/checkhandle/:twitterHandle', function( req, res) {
 	var twitterHandle = req.params.twitterHandle.trim().replace('@','');
 	var promise = userhandler.checkUniqueTwitterHandle(twitterHandle);
@@ -82,6 +95,9 @@ router.get('/checkhandle/:twitterHandle', function( req, res) {
 	});
 });
 
+/**
+ * checks if the email specified is already in use.
+ */
 router.get('/checkemail/:email', function( req, res) {
 	var email = req.params.email.trim();
 	var promise = userhandler.checkUniqueEmailID(email);

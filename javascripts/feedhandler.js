@@ -6,14 +6,29 @@ var MySQLHandler = require('./mysqlhandler');
 var Crypto = require('crypto');
 var Q = require('q');
 
+/**
+ * creates the feed for given twitterHandle.
+ * @param twitterHandle
+ * @returns {promise}
+ */
 exports.createFeed = function ( twitterHandle ) {
 	return _createFeed( twitterHandle );
 }
 
+/**
+ * generates the string of the date object in the format that is required to insert date in mysql
+ * @param date
+ * @returns {String}
+ */
 exports.generateDateString = function( date ) {
 	return _generateDateString( date );
 }
 
+/**
+ * gets the tweets of user specified by twitterHandle
+ * @param twitterHandle
+ * @returns {promise}
+ */
 exports.getTweetsOfUser = function ( twitterHandle ) {
 	var deferred = Q.defer();
 	twitterHandle = twitterHandle.trim().replace('@','');
@@ -29,14 +44,31 @@ exports.getTweetsOfUser = function ( twitterHandle ) {
 	return deferred.promise;
 }
 
+/**
+ * posts a new tweet for given user.
+ * @param tweeterHandle
+ * @param tweetText
+ * @returns {promise}
+ */
 exports.postTweet = function ( tweeterHandle, tweetText ) {
 	return _postTweet( tweeterHandle, tweetText );
 }
 
+/**
+ * retweets a tweet with provided tweet_id
+ * @param tweeterHandle
+ * @param tweetID
+ * @returns {promise}
+ */
 exports.retweet = function( tweeterHandle, tweetID ) {
 	return _retweet( tweeterHandle, tweetID );
 }
 
+/**
+ * searches all tweets which contain searchTerm as hashTag
+ * @param searchTerm
+ * @returns {promise}
+ */
 exports.searchTweetsWithHashTag = function ( searchTerm ) {
 	searchTerm = searchTerm.trim().replace('#','');
 	var deferred = Q.defer();
@@ -55,6 +87,13 @@ exports.searchTweetsWithHashTag = function ( searchTerm ) {
 	return deferred.promise;
 }
 
+/**
+ * inserts the new tweet into the database.
+ * @param tweeterHandle
+ * @param tweetText
+ * @returns {promise}
+ * @private
+ */
 _postTweet = function( tweeterHandle, tweetText ) {
 	var deferred = Q.defer();
 	var currentTimeStamp = new Date();
@@ -86,12 +125,25 @@ _postTweet = function( tweeterHandle, tweetText ) {
 	return deferred.promise;
 }
 
+/**
+ * generates the new tweet id by calculating hash of current date and current logged in user.
+ * @param tweeterHandle
+ * @param currentTimeStamp
+ * @returns {String} tweet_id
+ * @private
+ */
 _generateTweetId = function( tweeterHandle, currentTimeStamp ) {
 	tweeterHandle = tweeterHandle.trim().replace('@','');
 	var id = Crypto.createHash('sha1').update(tweeterHandle + currentTimeStamp.toString()).digest('hex');
 	return id;
 }
 
+/**
+ * generates the string of the date object in the form which is required to insert the dates into mysql database.
+ * @param date
+ * @returns {string} date as a string.
+ * @private
+ */
 _generateDateString = function( date ) {
 	if(!date) {
 		return '';
@@ -107,28 +159,48 @@ _generateDateString = function( date ) {
 	return "";
 }
 
+/**
+ * separates out hashtags from given string.
+ * Note: hashtags containing any special characters are sanitized to keep only a-z and A-Z characters.
+ * @param tweetText
+ * @returns {Array} returns array of hashtags from the string.
+ * @private
+ */
 _processHashTags = function( tweetText ) {
 	var hashTags = [];
 	var words = tweetText.split(' ');
 	for(var i=0; i < words.length; i++) {
 		if(words[i].startsWith('#')) {
 			var word = words[i].trim().replace('#','');
+			word = word.replace(/[^a-zA-Z ]/g, "");
 			hashTags.push(word);
 		}
 	}
 	return hashTags;
 }
 
+/**
+ * inserts the given array of hashtags against given tweet id into the database.
+ * @param tweetId
+ * @param hashTags
+ * @private
+ */
 _insertHashTags = function( tweetId, hashTags ) {
 	var queries = [];
 	for(var j = 0 ; j < hashTags.length; j++) {
-		hashTags[j] = hashTags[j].replace(/[^a-zA-Z ]/g, "");
 		var query = 'insert into hashtags values(\'' + tweetId + '\',\'' + hashTags[j] + '\');';
 		queries.push(query);
 	}
 	return MySQLHandler.executeTransaction( queries );
 }
 
+/**
+ * inserts the entry of retweet of any tweet into the database.
+ * @param twitterHandle
+ * @param tweetId
+ * @returns {promise}
+ * @private
+ */
 _retweet = function( twitterHandle, tweetId ) {
 	twitterHandle = twitterHandle.trim().replace('@','');
 	var newTweetId = _generateTweetId( twitterHandle, new Date());
@@ -143,6 +215,13 @@ _retweet = function( twitterHandle, tweetId ) {
 	return deferred.promise;
 }
 
+/**
+ * creates the feed for the user specified by twitterHandle
+ * feed consists of tweets and retweets of his followers and his own.
+ * @param twitterHandle
+ * @returns {promise}
+ * @private
+ */
 _createFeed = function( twitterHandle ) {
 	twitterHandle = twitterHandle.trim().replace('@','');
 	var deferred = Q.defer();
