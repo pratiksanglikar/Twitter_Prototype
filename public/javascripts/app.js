@@ -451,7 +451,7 @@ app.controller("SearchDisplayController", ["$scope", "$window", "$rootScope", "u
 			}
 			if (searchData.type == 'tweets') {
 				$scope.userSearched = null;
-				$rootScope.userSearched
+				$rootScope.userSearched = null;
 				$scope.feed = searchData.result;
 			} else {
 				$scope.feed = null;

@@ -122,13 +122,6 @@ function _createPool( config ) {
 		getConnection: function () {
 			var connection = this._connections.shift();
 			var def = Q.defer();
-			/*connection.connect( function( error ) {
-				if( !error ) {
-					def.resolve( connection );
-				} else {
-					def.reject( error );
-				}
-			});*/
 			def.resolve(connection);
 			return def.promise;
 		},
