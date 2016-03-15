@@ -17,7 +17,7 @@ exports.executeQuery = function( sqlQuery ) {
 	promise.done(function (connection) {
 		connection.query(sqlQuery, function(err, rows) {
 			if ( !err ) {
-				connection.commit(function (error, result) {
+				connection.commit(function (error) {
 					if( error ) {
 						deferred.reject( error );
 						_releaseConnection(connection);
@@ -36,7 +36,7 @@ exports.executeQuery = function( sqlQuery ) {
 		deferred.reject( error );
 	});
 	return deferred.promise;
-}
+};
 
 /**
  * executes the set of queries as a transaction provided in an array.
@@ -82,13 +82,13 @@ exports.executeTransaction = function( queries ) {
 	});
 
 	return deferred.promise;
-}
+};
 
 
 
 /**
  * returns the current database connection pool
- * @returns {Pool}
+ * @returns {pool}
  * @private
  */
 function _getPool() {
@@ -120,9 +120,13 @@ function _createPool( config ) {
 		 * @returns {connection}
 		 */
 		getConnection: function () {
-			var connection = this._connections.shift();
 			var def = Q.defer();
-			def.resolve(connection);
+			if(this._connections.length > 0 ) {
+				var connection = this._connections.shift();
+				def.resolve(connection);
+			} else {
+				def.reject("No more connections available in pool");
+			}
 			return def.promise;
 		},
 
@@ -134,7 +138,7 @@ function _createPool( config ) {
 			//connection.end();
 			this._connections.push( connection );
 		}
-	}
+	};
 	var poolSize = config.poolsize || 10;
 	for( var i = 0 ; i < poolSize ; i++) {
 		var connection = mysql.createConnection({
