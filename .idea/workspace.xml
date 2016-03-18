@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d30f815d-c7f4-49e0-a955-69d47281a125" name="Default" comment="Fixed little issue with connection pooling.&#10;Added a check if the connections not available in connection pool, it will throw an error.">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package.json" afterPath="$PROJECT_DIR$/package.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/testplan.js" afterPath="$PROJECT_DIR$/test/testplan.js" />
     </list>
     <ignored path="Twitter_Prototype.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -47,11 +46,21 @@
       <file leaf-file-name="testplan.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/testplan.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
-              <caret line="11" column="3" selection-start-line="11" selection-start-column="3" selection-end-line="11" selection-end-column="3" />
+            <state relative-caret-position="527">
+              <caret line="67" column="3" selection-start-line="67" selection-start-column="3" selection-end-line="67" selection-end-column="3" />
               <folding>
                 <element signature="e#0#50#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="app.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/public/javascripts/app.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="268">
+              <caret line="121" column="20" selection-start-line="121" selection-start-column="20" selection-end-line="121" selection-end-column="20" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -103,8 +112,8 @@
         <option value="$PROJECT_DIR$/javascripts/userhandler.js" />
         <option value="$PROJECT_DIR$/public/javascripts/app.js" />
         <option value="$PROJECT_DIR$/javascripts/mysqlhandler.js" />
-        <option value="$PROJECT_DIR$/test/testplan.js" />
         <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/test/testplan.js" />
       </list>
     </option>
   </component>
@@ -190,7 +199,7 @@
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="js-jscs-nodeInterpreter" value="/usr/local/bin/node" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="SearchEverywhereHistoryKey" value="my&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/mysqlhandler.js&#10;feed&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/feed.js&#10;FeedHandler&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/feedhandler.js&#10;app.js&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/javascripts/app.js&#10;style&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/stylesheets/style.css&#10;feed.ht&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/partials/feed.html&#10;feedHa&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/feedhandler.js&#10;authentica&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/authentication.js&#10;mysql&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/mysqlhandler.js&#10;sty&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/stylesheets/style.css&#10;feed.html&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/partials/feed.html&#10;home.ejs&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/views/home.ejs&#10;search&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/search.js&#10;userhandler&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/userhandler.js&#10;users.js&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/users.js&#10;search.html&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/partials/search.html&#10;user&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/users.js&#10;users&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/users.js&#10;home.&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/views/home.ejs&#10;req&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/Requirements.txt&#10;feedHandler&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/feedhandler.js&#10;app&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/app.js&#10;createF&#9;null&#9;null&#10;home&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/views/home.ejs&#10;authe&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/authentication.js&#10;mys&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/mysqlhandler.js&#10;userhand&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/userhandler.js&#10;UserSER&#9;null&#9;null&#10;signup&#9;null&#9;null&#10;requireLo&#9;null&#9;null&#10;Q.all&#9;null&#9;null&#10;userhan&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/userhandler.js&#10;fullName&#9;null&#9;null&#10;decryptPassword&#9;null&#9;null&#10;validate&#9;null&#9;null&#10;supersantosh&#9;null&#9;null" />
+    <property name="SearchEverywhereHistoryKey" value="app.js&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/javascripts/app.js&#10;my&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/mysqlhandler.js&#10;feed&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/feed.js&#10;FeedHandler&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/feedhandler.js&#10;style&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/stylesheets/style.css&#10;feed.ht&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/partials/feed.html&#10;feedHa&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/feedhandler.js&#10;authentica&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/authentication.js&#10;mysql&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/mysqlhandler.js&#10;sty&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/stylesheets/style.css&#10;feed.html&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/partials/feed.html&#10;home.ejs&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/views/home.ejs&#10;search&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/search.js&#10;userhandler&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/userhandler.js&#10;users.js&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/users.js&#10;search.html&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/public/partials/search.html&#10;user&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/users.js&#10;users&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/users.js&#10;home.&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/views/home.ejs&#10;req&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/Requirements.txt&#10;feedHandler&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/feedhandler.js&#10;app&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/app.js&#10;createF&#9;null&#9;null&#10;home&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/views/home.ejs&#10;authe&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/routes/authentication.js&#10;mys&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/mysqlhandler.js&#10;userhand&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/userhandler.js&#10;UserSER&#9;null&#9;null&#10;signup&#9;null&#9;null&#10;requireLo&#9;null&#9;null&#10;Q.all&#9;null&#9;null&#10;userhan&#9;FILE&#9;file:///Users/pratiksanglikar/WebstormProjects/Twitter_Prototype/javascripts/userhandler.js&#10;fullName&#9;null&#9;null&#10;decryptPassword&#9;null&#9;null&#10;validate&#9;null&#9;null&#10;supersantosh&#9;null&#9;null" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="settings.editor.selected.configurable" value="configurable.group.project" />
@@ -297,12 +306,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1456714086386</updated>
-      <workItem from="1458332065392" duration="1191000" />
+      <workItem from="1458332065392" duration="5316000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1191000" />
+    <option name="totallyTimeSpent" value="5316000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1280" height="714" extended-state="6" />
@@ -313,7 +322,7 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32868218" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26666668" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26666668" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -345,7 +354,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="98" />
+      <option name="time" value="99" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -672,13 +681,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/public/javascripts/app.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="453" column="47" selection-start-line="453" selection-start-column="47" selection-end-line="453" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/routes/authentication.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
@@ -703,10 +705,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/public/javascripts/app.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="268">
+          <caret line="121" column="20" selection-start-line="121" selection-start-column="20" selection-end-line="121" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/testplan.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="11" column="3" selection-start-line="11" selection-start-column="3" selection-end-line="11" selection-end-column="3" />
+        <state relative-caret-position="527">
+          <caret line="67" column="3" selection-start-line="67" selection-start-column="3" selection-end-line="67" selection-end-column="3" />
           <folding>
             <element signature="e#0#50#0" expanded="false" />
           </folding>
