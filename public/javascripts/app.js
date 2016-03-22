@@ -333,6 +333,8 @@ app.controller("FeedController", ["$window", "$http", "$scope", "$sce", "$rootSc
 		 */
 		$rootScope.tagTermClick = function (e) {
 			var tagText = e.target.innerText;
+			$rootScope.userSearched = null;
+			$rootScope.searchFeed = null;
 			$rootScope.$broadcast("hashSearch", tagText);
 		};
 		init();
@@ -351,6 +353,8 @@ app.factory('searchservice', function ($q, $http, $rootScope) {
 				method: 'GET',
 				url: 'http://localhost:3000/search/' + searchTerm
 			}).then(function (result) {
+				/*$rootScope.searchFeed = null;
+				$rootScope.userSearched = null;*/
 				$rootScope.$broadcast('searchDataReceived', result.data);
 				def.resolve(result.data);
 			}, function (error) {
@@ -398,10 +402,12 @@ app.controller("SearchController", ["$http", "$scope", "$window", "$rootScope", 
 			promise.then(function (result) {
 				$scope.searchFeed = result.result;
 				if (!result.result[0].birthDate) {
+					$rootScope.userSearched = null;
 					$rootScope.searchFeed = result.result;
 				} else {
 					var birthDate = new Date(result.result[0].birthDate);
 					var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+					$rootScope.searchFeed = null;
 					$rootScope.userSearched = result.result[0];
 					$rootScope.userSearched.birthDateDay = birthDate.getUTCDate();
 					$rootScope.userSearched.birthDateMonth = months[birthDate.getUTCMonth()];
