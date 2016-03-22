@@ -2,7 +2,7 @@
  * Created by pratiksanglikar on 02/03/16.
  */
 
-var passwordManager = require('./passwordManager');
+var passwordManager = require('./passwordmanager');
 var mysqlHandler = require('./mysqlhandler');
 var FeedHandler = require('./feedhandler');
 var Q = require('q');

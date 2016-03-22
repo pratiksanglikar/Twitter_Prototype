@@ -524,7 +524,7 @@ app.config(function ($routeProvider) {
 /**
  * Angular controller for home page of the user.
  */
-app.controller("MainControl", ["$scope", "$window", "userservice", function ($scope, $window, userservice) {
+app.controller("MainControl", ["$scope", "$window", function ($scope, $window) {
 	$scope.postTweet = function () {
 		if (!$scope.twitterHandle || $scope.twitterHandle === '' || !$scope.tweetText || $scope.tweetText === '') {
 			return;
