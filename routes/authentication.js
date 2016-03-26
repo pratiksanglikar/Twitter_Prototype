@@ -38,7 +38,7 @@ router.post('/login', function(req, res) {
  * logouts the user from system.
  */
 router.get('/logout', function(req, res, next) {
-	req.session.reset();
+	req.session.destroy();
 	res.redirect('/');
 });
 
