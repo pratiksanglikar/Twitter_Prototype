@@ -141,7 +141,7 @@ app.factory('userservice', function ($q, $http) {
 				method: 'GET',
 				url: 'http://localhost:3000/users/currentuser'
 			}).then(function (result) {
-				def.resolve(result.data[0]);
+				def.resolve(result.data);
 			}, function (error) {
 				def.reject(error);
 			});
@@ -401,17 +401,16 @@ app.controller("SearchController", ["$http", "$scope", "$window", "$rootScope", 
 			var promise = SearchService.search(text);
 			promise.then(function (result) {
 				$scope.searchFeed = result.result;
-				if (!result.result[0].birthDate) {
+				if (!result.result.birthDay) {
 					$rootScope.userSearched = null;
 					$rootScope.searchFeed = result.result;
 				} else {
-					var birthDate = new Date(result.result[0].birthDate);
 					var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 					$rootScope.searchFeed = null;
-					$rootScope.userSearched = result.result[0];
-					$rootScope.userSearched.birthDateDay = birthDate.getUTCDate();
-					$rootScope.userSearched.birthDateMonth = months[birthDate.getUTCMonth()];
-					$rootScope.userSearched.birthDateYear = birthDate.getUTCFullYear();
+					$rootScope.userSearched = result.result;
+					$rootScope.userSearched.birthDateDay = result.birthDay;
+					$rootScope.userSearched.birthDateMonth = months[result.birthMonth];
+					$rootScope.userSearched.birthDateYear = result.birthYear;
 				}
 				$window.location.href = "home#/search";
 			}, function (error) {
@@ -463,11 +462,10 @@ app.controller("SearchDisplayController", ["$scope", "$window", "$rootScope", "u
 				$scope.feed = null;
 				$rootScope.searchFeed = null;
 				var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-				$scope.userSearched = searchData.result[0];
-				var birthDate = new Date(searchData.result[0].birthDate);
-				$scope.userSearched.birthDateDay = birthDate.getUTCDate();
-				$scope.userSearched.birthDateMonth = months[birthDate.getUTCMonth()];
-				$scope.userSearched.birthDateYear = birthDate.getUTCFullYear();
+				$scope.userSearched = searchData.result;
+				$scope.userSearched.birthDateDay = result.birthDay;
+				$scope.userSearched.birthDateMonth = months[result.birthMonth];
+				$scope.userSearched.birthDateYear = result.birthYear;
 			}
 		});
 

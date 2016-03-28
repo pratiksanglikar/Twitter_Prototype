@@ -6,6 +6,7 @@ var router = express.Router();
 var FeedHandler = require('../javascripts/feedhandler');
 var Auth = require('./authentication');
 var UserHandler = require('../javascripts/userhandler');
+/*var migrationTool = require("../javascripts/migratemongo");*/
 
 /**
  * calculates the feed for given user.
@@ -48,7 +49,7 @@ router.get('/:twitterHandle', Auth.requireLogin, function(req, res) {
 router.post('/', Auth.requireLogin, function(req, res, next) {
 	var twitterHandle = req.user.twitterHandle;
 	var twitterText = req.body.twitterText;
-	var postTweetPromise = FeedHandler.postTweet(twitterHandle, twitterText);
+	var postTweetPromise = FeedHandler.postTweet(twitterHandle, twitterText, req.user.firstName, req.user.lastName);
 	postTweetPromise.done( function( result ) {
 		res.send({ "success" : true });
 	}, function( error ) {
@@ -62,12 +63,20 @@ router.post('/', Auth.requireLogin, function(req, res, next) {
 router.post('/retweet/:tweet_id', Auth.requireLogin, function (req, res, next) {
 	var twitterHandle = req.user.twitterHandle;
 	var tweet_id = req.params.tweet_id;
-	var retweetPromise = FeedHandler.retweet( twitterHandle, tweet_id );
+	var retweetPromise = FeedHandler.retweet( twitterHandle, tweet_id, req.user.firstName, req.user.lastName );
 	retweetPromise.done( function( result ) {
 		res.send({ "success" : true , "result" : result });
 	}, function( error ) {
 		res.send({ "success" : false, "error" : error });
 	});
 });
+
+/**
+ * NOT FOR PRODUCTION. TEMPORARY FUNCTION TO MIGRATE DB FROM MYSQL TO MONGODB
+ */
+/*router.get("/migrate", function (req, res) {
+	migrationTool.migrate("pratiksanglikar");
+	res.send({"Okay!":"got it!"});
+});*/
 
 module.exports = router;

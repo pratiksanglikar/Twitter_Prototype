@@ -98,7 +98,7 @@ function _getPool() {
 			user     : 'root',
 			password : 'pratik2901',
 			database : 'twitter',
-			poolsize : 100
+			poolsize : 40
 		});
 	}
 	return pool;

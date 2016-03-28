@@ -17,7 +17,7 @@ router.get('/:searchTerm', Auth.requireLogin, function (req, res) {
 		promise.done(function (result) {
 			var isFollowedByPromise = Userhandler.isFollowedBy( searchTerm, req.user.twitterHandle );
 			isFollowedByPromise.done( function ( isFollowed ) {
-				result[0].isFollowed = isFollowed.success;
+				result.isFollowed = isFollowed.success;
 				res.send({
 					"type": "user",
 					"success": true,

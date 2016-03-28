@@ -2,17 +2,19 @@
  * Created by pratiksanglikar on 07/03/16.
  */
 
-var MySQLHandler = require('./mysqlhandler');
+//var MySQLHandler = require('./mysqlhandler');
 var Crypto = require('crypto');
 var Q = require('q');
+var MongoDB = require("./mongodbhandler");
+var assert = require("assert");
 
 /**
  * creates the feed for given twitterHandle.
  * @param twitterHandle
  * @returns {promise}
  */
-exports.createFeed = function ( twitterHandle ) {
-	return _createFeed( twitterHandle );
+exports.createFeed = function (twitterHandle) {
+	return _createFeed(twitterHandle);
 }
 
 /**
@@ -20,8 +22,8 @@ exports.createFeed = function ( twitterHandle ) {
  * @param date
  * @returns {String}
  */
-exports.generateDateString = function( date ) {
-	return _generateDateString( date );
+exports.generateDateString = function (date) {
+	return _generateDateString(date);
 }
 
 /**
@@ -29,17 +31,22 @@ exports.generateDateString = function( date ) {
  * @param twitterHandle
  * @returns {promise}
  */
-exports.getTweetsOfUser = function ( twitterHandle ) {
+exports.getTweetsOfUser = function (twitterHandle) {
 	var deferred = Q.defer();
-	twitterHandle = twitterHandle.trim().replace('@','');
-	var query = "SELECT tweets.tweet_id, tweet_data.tweet_text, tweet_data.created_on, tweets.twitterHandle ";
-		query += "FROM tweet_data, tweets WHERE tweets.twitterHandle = \'" + twitterHandle + "\' AND ";
-		query += "(tweet_data.tweet_id = tweets.tweet_id OR tweets.retweet_of_id = tweet_data.tweet_id);";
-	var promise = MySQLHandler.executeQuery( query );
-	promise.done( function( result ) {
-		deferred.resolve( result );
-	}, function ( error ) {
-		deferred.reject( error );
+	twitterHandle = twitterHandle.trim().replace('@', '');
+	var cursor = MongoDB.collection("tweets").find({
+		twitterHandle: twitterHandle
+	});
+	var tweets = [];
+	cursor.each(function (err, doc) {
+		if (err) {
+			deferred.reject(err);
+		}
+		if (doc != null) {
+			tweets = doc;
+		} else {
+			deferred.resolve(tweets);
+		}
 	});
 	return deferred.promise;
 }
@@ -50,8 +57,8 @@ exports.getTweetsOfUser = function ( twitterHandle ) {
  * @param tweetText
  * @returns {promise}
  */
-exports.postTweet = function ( tweeterHandle, tweetText ) {
-	return _postTweet( tweeterHandle, tweetText );
+exports.postTweet = function (tweeterHandle, tweetText, firstName, lastName) {
+	return _postTweet(tweeterHandle, tweetText, firstName, lastName);
 }
 
 /**
@@ -60,67 +67,61 @@ exports.postTweet = function ( tweeterHandle, tweetText ) {
  * @param tweetID
  * @returns {promise}
  */
-exports.retweet = function( tweeterHandle, tweetID ) {
-	return _retweet( tweeterHandle, tweetID );
+exports.retweet = function (tweeterHandle, tweetID, firstName, lastName) {
+	return _retweet(tweeterHandle, tweetID, firstName, lastName);
 }
 
 /**
- * searches all tweets which contain searchTerm as hashTag
+ * TODO fix this
  * @param searchTerm
- * @returns {promise}
+ * @returns {*}
  */
-exports.searchTweetsWithHashTag = function ( searchTerm ) {
-	searchTerm = searchTerm.trim().replace('#','');
+exports.searchTweetsWithHashTag = function (searchTerm) {
+	searchTerm = searchTerm.trim().replace('#', '');
 	var deferred = Q.defer();
-	var query = "SELECT distinct tweets.tweet_id, tweet_data.tweet_text,tweet_data.created_on,users.twitterHandle,users.firstName,users.lastName ";
-	query += "FROM tweets,tweet_data,users,hashtags ";
-	query += "WHERE (tweet_data.tweet_id = tweets.tweet_id OR tweets.retweet_of_id = tweet_data.tweet_id) AND ";
-	query += "users.twitterHandle = tweets.twitterHandle AND tweets.tweet_id IN ( SELECT hashtags.tweet_id FROM hashtags WHERE hashtags.tag = \'";
-	query += searchTerm + "\') ORDER BY tweet_data.created_on DESC;";
-
-	var promise = MySQLHandler.executeQuery(query);
-	promise.done( function ( result ) {
-		deferred.resolve( result );
-	}, function ( error ) {
-		deferred.reject( error );
+	var feed = [];
+	var cursor = MongoDB.collection("tweets").find({
+		"tags": searchTerm
+	});
+	cursor.each(function (err, doc) {
+		if (err) {
+			deferred.reject(err);
+		}
+		if (doc != null) {
+			feed = feed.concat(doc);
+		} else {
+			deferred.resolve(feed);
+		}
 	});
 	return deferred.promise;
 }
 
 /**
- * inserts the new tweet into the database.
+ * Posts a new tweet to users account.
  * @param tweeterHandle
  * @param tweetText
  * @returns {promise}
  * @private
  */
-_postTweet = function( tweeterHandle, tweetText ) {
+_postTweet = function (tweeterHandle, tweetText, firstName, lastName) {
 	var deferred = Q.defer();
 	var currentTimeStamp = new Date();
-	tweeterHandle = tweeterHandle.trim().replace('@','');
-	var tweetId = _generateTweetId ( tweeterHandle, currentTimeStamp );
-	var query = "insert into tweets (`tweet_id`, `twitterHandle`) values(\'" + tweetId + "\',\'" + tweeterHandle + "\');";
-	var tweetCreationPromise = MySQLHandler.executeQuery(query);
-	tweetCreationPromise.done( function( result ) {
-		var tweetDataQuery = 'insert into tweet_data values(\'' + tweetId + '\',\'' + tweetText + "\',\'" + _generateDateString(currentTimeStamp) + "\');";
-		var tweetDataPromise = MySQLHandler.executeQuery(tweetDataQuery);
-		tweetDataPromise.done( function( result ) {
-			var hashTags = _processHashTags( tweetText );
-			if(hashTags.length > 0) {
-				var promise = _insertHashTags( tweetId, hashTags );
-				promise.done(function( result ) {
-					deferred.resolve({ "success" : true });
-				}, function( error ) {
-					deferred.reject( error );
-				});
-			} else {
-				deferred.resolve({ "success" : true });
-			}
-		}, function( error ) {
-			deferred.reject( error );
-		});
-	}, function ( error ) {
-		deferred.reject( error );
+	tweeterHandle = tweeterHandle.trim().replace('@', '');
+	var tweetId = _generateTweetId(tweeterHandle, currentTimeStamp);
+	var hashtags = _processHashTags(tweetText);
+	var tweet = {
+		created_on: currentTimeStamp,
+		tweet_id: tweetId,
+		tweet_text: tweetText,
+		tags: hashtags,
+		twitterHandle: tweeterHandle,
+		firstName: firstName,
+		lastName: lastName
+	};
+	MongoDB.collection("tweets").insert(tweet).then(function () {
+		deferred.resolve({"success": true});
+	}).catch(function (error) {
+		deferred.reject({"success": false, "error": error});
 	});
 	return deferred.promise;
 }
@@ -132,8 +133,8 @@ _postTweet = function( tweeterHandle, tweetText ) {
  * @returns {String} tweet_id
  * @private
  */
-_generateTweetId = function( tweeterHandle, currentTimeStamp ) {
-	tweeterHandle = tweeterHandle.trim().replace('@','');
+_generateTweetId = function (tweeterHandle, currentTimeStamp) {
+	tweeterHandle = tweeterHandle.trim().replace('@', '');
 	var id = Crypto.createHash('sha1').update(tweeterHandle + currentTimeStamp.toString()).digest('hex');
 	return id;
 }
@@ -144,16 +145,16 @@ _generateTweetId = function( tweeterHandle, currentTimeStamp ) {
  * @returns {string} date as a string.
  * @private
  */
-_generateDateString = function( date ) {
-	if(!date) {
+_generateDateString = function (date) {
+	if (!date) {
 		return '';
 	}
-	if(date instanceof Number) {
+	if (date instanceof Number) {
 		date = new Date(date);
 	}
-	if(date instanceof Date) {
+	if (date instanceof Date) {
 		var string = '';
-		string += date.getUTCFullYear() + '-' + (date.getUTCMonth()+1) + '-' + date.getUTCDate() + ' ' + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+		string += date.getUTCFullYear() + '-' + (date.getUTCMonth() + 1) + '-' + date.getUTCDate() + ' ' + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 		return string;
 	}
 	return "";
@@ -166,12 +167,13 @@ _generateDateString = function( date ) {
  * @returns {Array} returns array of hashtags from the string.
  * @private
  */
-_processHashTags = function( tweetText ) {
+_processHashTags = function (tweetText) {
 	var hashTags = [];
+	tweetText = tweetText.replace('\n', " ");
 	var words = tweetText.split(' ');
-	for(var i=0; i < words.length; i++) {
-		if(words[i].startsWith('#')) {
-			var word = words[i].trim().replace('#','');
+	for (var i = 0; i < words.length; i++) {
+		if (words[i].startsWith('#')) {
+			var word = words[i].trim().replace('#', '');
 			word = word.replace(/[^a-zA-Z ]/g, "");
 			hashTags.push(word);
 		}
@@ -180,62 +182,96 @@ _processHashTags = function( tweetText ) {
 }
 
 /**
- * inserts the given array of hashtags against given tweet id into the database.
- * @param tweetId
- * @param hashTags
- * @private
- */
-_insertHashTags = function( tweetId, hashTags ) {
-	var queries = [];
-	for(var j = 0 ; j < hashTags.length; j++) {
-		var query = 'insert into hashtags values(\'' + tweetId + '\',\'' + hashTags[j] + '\');';
-		queries.push(query);
-	}
-	return MySQLHandler.executeTransaction( queries );
-}
-
-/**
+ * TODO modularize
  * inserts the entry of retweet of any tweet into the database.
  * @param twitterHandle
  * @param tweetId
  * @returns {promise}
  * @private
  */
-_retweet = function( twitterHandle, tweetId ) {
-	twitterHandle = twitterHandle.trim().replace('@','');
-	var newTweetId = _generateTweetId( twitterHandle, new Date());
-	var query = "insert into tweets values(\'" + newTweetId + "\',\'" + tweetId + "\',\'" + twitterHandle + "\');";
-	var promise = MySQLHandler.executeQuery(query);
-	var deferred  = Q.defer();
-	promise.done( function ( result ) {
-		deferred.resolve({"success" : true, "result" : result});
-	}, function (error) {
-		deferred.reject({"success": false, "error" : error});
+_retweet = function (twitterHandle, tweetId, firstName, lastName) {
+	twitterHandle = twitterHandle.trim().replace('@', '');
+
+	var newTweetId = _generateTweetId(twitterHandle, new Date());
+	var deferred = Q.defer();
+	var cursor = MongoDB.collection("tweets").find({
+		"tweet_id": tweetId
+	});
+	cursor.each(function (err, doc) {
+		var tweet = null;
+		if (err) {
+			deferred.reject(err);
+		} else {
+			if (doc != null) {
+				tweet = doc;
+				if(tweet != null) {
+					tweet._id = null;
+					tweet.tweet_id = newTweetId;
+					tweet.created_on = new Date();
+					tweet.twitterHandle = twitterHandle;
+					tweet.firstName = firstName;
+					tweet.lastName = lastName;
+					tweet.isRetweet = true;
+					var cursor1 = MongoDB.collection("tweets").insert(tweet);
+					cursor1.then(function () {
+						deferred.resolve();
+					}).catch(function (error) {
+						deferred.reject(error);
+					});
+				} else {
+					deferred.reject("Tweet not found!");
+				}
+
+			}
+		}
 	});
 	return deferred.promise;
 }
 
 /**
- * creates the feed for the user specified by twitterHandle
- * feed consists of tweets and retweets of his followers and his own.
+ * creates a feed for given user.
  * @param twitterHandle
  * @returns {promise}
  * @private
  */
-_createFeed = function( twitterHandle ) {
-	twitterHandle = twitterHandle.trim().replace('@','');
-	var deferred = Q.defer();
-	var query =  "SELECT tweets.tweet_id, tweet_data.tweet_text,tweet_data.created_on,users.twitterHandle,users.firstName,users.lastName ";
-		query += "FROM tweets, tweet_data, users ";
-		query += "WHERE";
-		query += "(tweet_data.tweet_id = tweets.tweet_id OR tweets.retweet_of_id = tweet_data.tweet_id) AND ";
-		query += "users.twitterHandle = tweets.twitterHandle AND ";
-		query += "tweets.twitterHandle IN ( SELECT followers.twitterHandle FROM followers WHERE followers.followedBy = \'" + twitterHandle + "\') ORDER BY tweet_data.created_on DESC;";
-	var queryPromise = MySQLHandler.executeQuery(query);
-	queryPromise.done( function ( result ) {
-		deferred.resolve( result );
-	}, function ( error ) {
-		deferred.reject( error );
+_createFeed = function (twitterHandle) {
+	var promise = Q.defer();
+	var feed = [];
+	twitterHandle = twitterHandle.trim().replace('@', "");
+	var cursor = MongoDB.collection("users").find({
+		"twitterHandle": twitterHandle
 	});
-	return deferred.promise;
+	cursor.each(function (err, doc) {
+		assert.equal(err, null);
+		if (doc != null) {
+			var followingCursor = MongoDB.collection("tweets").find({twitterHandle: {$in: doc.following}});
+			followingCursor.each(function (err, tweets) {
+				if (tweets != null) {
+					feed = feed.concat(tweets);
+				} else {
+					promise.resolve(_sortByDateDesceding(feed, "created_on"));
+				}
+			});
+		}
+	});
+	return promise.promise;
+}
+
+/**
+ * sorts the array according to descending order of dates.
+ * @param array array to be sorted.
+ * @param attribute name of the attribute which contains dates
+ * @returns {array} sorted array.
+ * @private
+ */
+_sortByDateDesceding = function (array, attribute) {
+	array.sort(function (a, b) {
+		var keyA = new Date(a[attribute]),
+			keyB = new Date(b[attribute]);
+		// Compare the 2 dates
+		if (keyA < keyB) return 1;
+		if (keyA > keyB) return -1;
+		return 0;
+	});
+	return array;
 }

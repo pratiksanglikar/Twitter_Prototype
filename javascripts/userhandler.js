@@ -4,6 +4,7 @@
 
 var passwordManager = require('./passwordmanager');
 var mysqlHandler = require('./mysqlhandler');
+var MongoDB = require("./mongodbhandler");
 var FeedHandler = require('./feedhandler');
 var Q = require('q');
 
@@ -15,22 +16,18 @@ var Q = require('q');
 exports.signup = function( info ) {
 	info = _sanitizeInput( info );
 	var deferred = Q.defer();
-	var twitterHandle = info.twitterHandle.trim().replace('@','');
 	var validationPromise = _validateSignUpInfo( info );
 	validationPromise.done(function() {
-		var query = _createSignUpQuery( info );
-		var resultPromise = mysqlHandler.executeQuery( query );
-		resultPromise.done( function ( result ) {
-			var promise = mysqlHandler.executeQuery('insert into followers values (\'' + twitterHandle + "\',\'" + twitterHandle + "\');");
-			promise.done( function() {
-				deferred.resolve( result );
-			}, function (error) {
-				deferred.reject( error );
-			});
-		}, function( error ) {
+		info.password = passwordManager.encryptPassword(info.password);
+		info.following = [info.twitterHandle];
+		info.followers = [info.twitterHandle];
+		info.tweets = [];
+		var cursor = MongoDB.collection("users").insert(info);
+		cursor.then(function () {
+			deferred.resolve();
+		}).catch( function(error)  {
 			deferred.reject( error );
 		});
-
 	}, function( error ) {
 		deferred.reject( error )
 	});
@@ -62,15 +59,27 @@ exports.checkUniqueEmailID = function ( emailID ) {
  */
 exports.findUserForAuthentication = function( twitterHandle ) {
 	var deferred = Q.defer();
-	var foundPromise = _findUserByHandle( twitterHandle );
-	foundPromise.done(function ( user ) {
-		deferred.resolve( {
-			"twitterHandle" : user[0].twitterHandle,
-			"password" : user[0].password
-		} );
-	}, function ( error ){
-		deferred.reject( error );
-	});
+	var cursor = MongoDB.collection("users").find({twitterHandle: twitterHandle});
+	var user = null;
+	cursor.each(function (err, doc) {
+		if(err) {
+			deferred.reject( err );
+		}
+		if(doc != null) {
+			user = doc;
+		} else {
+			if(user == null) {
+				deferred.reject("User not found!");
+			} else {
+				deferred.resolve( {
+					"twitterHandle": user.twitterHandle,
+					"password": user.password,
+					"firstName": user.firstName,
+					"lastName": user.lastName
+				} );
+			}
+		}
+	})
 	return deferred.promise;
 }
 
@@ -81,25 +90,30 @@ exports.findUserForAuthentication = function( twitterHandle ) {
  */
 exports.findUser = function( twitterHandle ) {
 	twitterHandle = twitterHandle.trim().replace('@','');
-	var queries = [],
-		deferred = Q.defer();
-	queries[0] = "Select * from users where twitterHandle = \'" + twitterHandle + "\';";
-	queries[1] = "select count(*) from followers where twitterHandle = \'" + twitterHandle + "\';";
-	queries[2] = "select count(*) from tweets where twitterHandle = \'" + twitterHandle + "\';";
-	queries[3] = "SELECT count(*) from followers where followedBy = \'" + twitterHandle + "\'";
-	var promise = mysqlHandler.executeTransaction( queries );
-	promise.done( function( results ) {
-		if(results[0][0]){
-			results[0][0].followers = results[1][0]["count(*)"];
-			results[0][0].tweets = results[2][0]["count(*)"];
-			results[0][0].following = results[3][0]["count(*)"];
-			deferred.resolve(results[0]);
-		} else {
-			deferred.reject("User not found!");
+	var deferred = Q.defer();
+	var user = null;
+	var cursor = MongoDB.collection("users").find({twitterHandle: twitterHandle});
+	cursor.each(function (err, doc) {
+		if( err ) {
+			deferred.reject( err );
 		}
-	}, function ( error ) {
-		deferred.reject( error );
-	});
+		if( doc != null) {
+			user = doc;
+		} else {
+			if(user) {
+				user.following = user.following.length;
+				user.followers = user.followers.length;
+				user.tweets = null;
+				var tweets = 0;
+				MongoDB.collection("tweets").find({twitterHandle: twitterHandle}).toArray(function (err, documents) {
+					user.tweets = documents.length;
+					deferred.resolve(user);
+				});
+			} else {
+				deferred.reject("User not found!");
+			}
+		}
+	})
 	return deferred.promise;
 }
 
@@ -113,12 +127,26 @@ exports.follow = function( ownHandle, handleToBeFollowed ) {
 	ownHandle = ownHandle.trim().replace('@','');
 	handleToBeFollowed = handleToBeFollowed.trim().replace('@','');
 	var deferred = Q.defer();
-	var query = 'insert into followers values(\'' + handleToBeFollowed + "\',\'" + ownHandle + "\');";
-	var queryPromise = mysqlHandler.executeQuery( query );
-	queryPromise.done( function ( result ) {
-		deferred.resolve( result );
-	}, function( error ) {
-		deferred.reject( error );
+	var cursor = MongoDB.collection("users").update({
+		twitterHandle: ownHandle
+	}, {
+		$push: {
+			following: handleToBeFollowed
+		}
+	}).then(function () {
+		MongoDB.collection("users").update({
+			twitterHandle: handleToBeFollowed
+		}, {
+			$push: {
+				followers: ownHandle
+			}
+		}).then(function () {
+			deferred.resolve({"success": true});
+		}).catch(function (error) {
+			deferred.reject({"success": false, "error": error});
+		});
+	}).catch(function (error) {
+		deferred.reject({"success": false, "error": error});
 	});
 	return deferred.promise;
 }
@@ -130,16 +158,29 @@ exports.follow = function( ownHandle, handleToBeFollowed ) {
  * @returns {promise}
  */
 exports.unfollow = function( ownHandle, handleToBeFollowed ) {
+	var deferred = Q.defer();
 	ownHandle = ownHandle.trim().replace('@','');
 	handleToBeFollowed = handleToBeFollowed.trim().replace('@','');
-	var deferred = Q.defer();
-	var query = 'delete from followers where twitterHandle=\'' + handleToBeFollowed + "\' AND followedBy = \'" + ownHandle + "\';";
-	var queryPromise = mysqlHandler.executeQuery( query );
-	queryPromise.done( function ( result ) {
-		deferred.resolve( result );
-	}, function( error ) {
-		deferred.reject( error );
+	MongoDB.collection("users").update({
+		twitterHandle: ownHandle
+	}, {
+			$pull:
+				{
+					following: handleToBeFollowed
+				}
+	}).then(function () {
+		MongoDB.collection("users").update({
+			twitterHandle: handleToBeFollowed
+		}, {
+			$pull:
+			{
+				followers: ownHandle
+			}
+		}).then(function () {
+			deferred.resolve({"success" : true});
+		});
 	});
+
 	return deferred.promise;
 }
 
@@ -151,43 +192,49 @@ exports.unfollow = function( ownHandle, handleToBeFollowed ) {
  */
 exports.isFollowedBy = function( personHandle, isFollowedByHandle ) {
 	personHandle = personHandle.trim().replace('@','');
+	var user = null;
 	isFollowedByHandle = isFollowedByHandle.trim().replace('@','');
 	var deferred = Q.defer();
-	var query = 'SELECT * from followers WHERE twitterHandle = \'' + personHandle + "\' AND followedBy = \'" + isFollowedByHandle + "\';";
-	var promise = mysqlHandler.executeQuery( query );
-	promise.done( function( result ) {
-		if(result.length > 0) {
-			deferred.resolve({ "success" : true });
+	var cursor = MongoDB.collection("users").find({twitterHandle: personHandle});
+	cursor.each(function (err, doc) {
+		if(err) {
+			deferred.reject(err);
+		} if(doc != null) {
+			user = doc;
 		} else {
-			deferred.resolve({ "success": false });
+			if(user) {
+				var isFollowedBy = _contains(user.followers,isFollowedByHandle);
+				if(isFollowedBy) {
+					deferred.resolve({"success": true});
+				} else {
+					deferred.resolve({"success": false});
+				}
+			} else {
+				deferred.reject({"success": false, "error": "User not found!"});
+			}
 		}
-	}, function( error ) {
-		deferred.reject( {"success" : false, "error" : error });
 	});
 	return deferred.promise;
 }
 
 /**
- * creates the database query for signing up the user.
- * @param info
- * @returns {string}
+ * checks if the array contains certain value.
+ * @param array
+ * @param value
+ * @returns {boolean}
  * @private
  */
-_createSignUpQuery = function( info ) {
-	var twitterHandle = info.twitterHandle;
-	var password = passwordManager.encryptPassword( info.password );
-	var birthdate = FeedHandler.generateDateString( new Date(info.birthDate ));
-	twitterHandle = twitterHandle.replace('@','');
-	var query = "insert into users values(\'";
-		query += twitterHandle + "\',\'";
-		query += info.firstName + "\',\'";
-		query += info.lastName + "\',\'";
-		query += info.emailID + "\',\'";
-		query += password + "\',\'";
-		query += info.phoneNumber + "\',\'";
-		query += birthdate + "\',\'";
-		query += info.location + "\');";
-	return query;
+_contains = function (array, value) {
+	if(array instanceof Array) {
+		for(var i = 0 ; i < array.length; i++) {
+			if(array[i] === value) {
+				return true;
+			}
+		}
+		return false;
+	} else {
+		throw "Not an array";
+	}
 }
 
 /**
@@ -266,17 +313,19 @@ _sanitizeInput = function ( info ) {
  * @private
  */
 _checkUniqueTwitterHandle = function( twitterHandle ) {
-	var query = "SELECT twitterHandle from users where twitterHandle = \'" + twitterHandle + "\';";
-	var promise = mysqlHandler.executeQuery(query);
 	var deferred = Q.defer();
-	promise.done( function( result ) {
-		if(result && result.length > 0) {
-			deferred.reject("twitter handle already registered");
+	var user = null;
+	var cursor = MongoDB.collection("users").find({twitterHandle: twitterHandle});
+	cursor.each(function (err, doc) {
+		if(err) {
+			deferred.reject(err);
+		} if( doc != null) {
+			user = doc;
+		} else if(user){
+			deferred.reject("TwitterHandle already in use");
 		} else {
 			deferred.resolve();
 		}
-	}, function (error) {
-		deferred.reject( error );
 	});
 	return deferred.promise;
 }
@@ -288,17 +337,19 @@ _checkUniqueTwitterHandle = function( twitterHandle ) {
  * @private
  */
 _checkUniqueEmailID = function( emailID ) {
-	var query = "SELECT twitterHandle from users where emailID = \'" + emailID + "\';";
-	var promise = mysqlHandler.executeQuery( query );
 	var deferred = Q.defer();
-	promise.done(function( result ) {
-		if(result && result.length > 0) {
-			deferred.reject("email id already registered");
+	var user = null;
+	var cursor = MongoDB.collection("users").find({emailID: emailID});
+	cursor.each(function (err, doc) {
+		if(err) {
+			deferred.reject(err);
+		} if( doc != null) {
+			user = doc;
+		} else if(user){
+			deferred.reject("EmailID already in use");
 		} else {
 			deferred.resolve();
 		}
-	}, function( error ) {
-		deferred.reject( error );
 	});
 	return deferred.promise;
 }
@@ -310,53 +361,19 @@ _checkUniqueEmailID = function( emailID ) {
  * @private
  */
 _findUserByHandle = function( twitterHandle ) {
-	var query = "Select * from users where twitterHandle = \'" + twitterHandle + "\';";
-	var queryPromise = mysqlHandler.executeQuery( query );
 	var deferred = Q.defer();
-	queryPromise.done(function( result ) {
-		if(result.length > 0) {
-			deferred.resolve( result );
+	var user = null;
+	var cursor = MongoDB.collection("users").find({twitterHandle: twitterHandle});
+	cursor.each(function (err, doc) {
+		if(err) {
+			deferred.reject(err);
+		} if( doc != null) {
+			user = doc;
+		} else if(user){
+			deferred.resolve(user);
 		} else {
-			deferred.reject("User " + twitterHandle + " not found.");
+			deferred.reject("User not found!");
 		}
-	}, function ( error ) {
-		deferred.reject( error );
-	});
-	return deferred.promise;
-}
-
-/**
- * returns the number of followers of given user.
- * @param twitterHandle
- * @returns {promise}
- * @private
- */
-_getNumberOfFollowers = function( twitterHandle ) {
-	var query = "select count(*) from followers where twitterHandle = \'" + twitterHandle + "\'";
-	var queryPromise = mysqlHandler.executeQuery( query );
-	var deferred = Q.defer();
-	queryPromise.done( function (result) {
-		deferred.resolve( result );
-	}, function (error) {
-		deferred.reject( error );
-	});
-	return deferred.promise;
-}
-
-/**
- * returns the number of tweets of the person.
- * @param twitterHandle
- * @returns {promise}
- * @private
- */
-_getNumberOfTweets = function( twitterHandle ) {
-	var query = "select count(*) from tweets where twitterHandle = \'" + twitterHandle + "\'";
-	var queryPromise = mysqlHandler.executeQuery( query );
-	var deferred = Q.defer();
-	queryPromise.done( function (result) {
-		deferred.resolve( result );
-	}, function (error) {
-		deferred.reject( error );
 	});
 	return deferred.promise;
 }
