@@ -1,7 +1,6 @@
 /**
  * Created by pratiksanglikar on 25/03/16.
  */
-//const MONGODBURL = "mongodb://localhost:27017/twitter";
 const MONGODBURL = "mongodb://pratik_twitter:sjsutwitter@ds019980.mlab.com:19980/twitter";
 exports.MONGODBURL = MONGODBURL;
 
@@ -13,8 +12,6 @@ var connected = false;
  * Connects to the MongoDB Database with the provided URL
  */
 exports.connect = function(url, callback) {
-	url = process.env.PROD_MONGODB;
-	console.log(url);
 	MongoClient.connect(url, function(err, _db){
 		if (err)
 		{
