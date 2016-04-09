@@ -13,6 +13,8 @@ var connected = false;
  * Connects to the MongoDB Database with the provided URL
  */
 exports.connect = function(url, callback) {
+	url = process.env.PROD_MONGODB;
+	console.log(url);
 	MongoClient.connect(url, function(err, _db){
 		if (err)
 		{
