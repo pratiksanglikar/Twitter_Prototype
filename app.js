@@ -19,26 +19,17 @@ var userHandler = require('./javascripts/userhandler');
 var app = express();
 
 // view engine setup
-app.set('port', 9000);
+app.set('port', 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-// app.use(session({
-// 	cookieName: 'session',
-// 	secret: '$@n-j05e-5+@+e-un!ver5!+y',
-// 	duration: 1800000,
-// 	activeDuration: 300000,
-// 	httpOnly: true,
-// 	secure: true,
-// 	ephemeral: true
-// }));
 
 app.use(session({
 	secret: '$@n-j05e-5+@+e-un!ver5!+y',
@@ -109,9 +100,9 @@ app.use(function(err, req, res, next) {
 
 mongodbhandler.connect(mongodbhandler.MONGODBURL, function(){
 	console.log('Connected to mongo at: ' + mongodbhandler.MONGODBURL);
-	http.createServer(app).listen(app.get('port'), function() {
+	/*http.createServer(app).listen(app.get('port'), function() {
 		console.log("Server started on port : " , app.get("port"));
-	});
+	});*/
 });
 
 module.exports = app;
