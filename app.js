@@ -100,9 +100,9 @@ app.use(function(err, req, res, next) {
 
 mongodbhandler.connect(mongodbhandler.MONGODBURL, function(){
 	console.log('Connected to mongo at: ' + mongodbhandler.MONGODBURL);
-	/*http.createServer(app).listen(app.get('port'), function() {
+	http.createServer(app).listen(app.get('port'), function() {
 		console.log("Server started on port : " , app.get("port"));
-	});*/
+	});
 });
 
 module.exports = app;

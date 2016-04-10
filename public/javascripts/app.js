@@ -45,7 +45,7 @@ app.factory('userservice', function ($q, $http) {
 			var deferred = $q.defer();
 			$http({
 				method: 'POST',
-				url: 'https://twitter-proto.herokuapp.com/users/',
+				url: 'http://localhost:3000/users/',
 				data: data
 			}).then(function (data) {
 				deferred.resolve();
@@ -62,7 +62,7 @@ app.factory('userservice', function ($q, $http) {
 		 */
 		checkUniqueTwitterHandle: function (twitterHandle) {
 			twitterHandle = twitterHandle.trim().replace('@', '');
-			var url = 'https://twitter-proto.herokuapp.com/users/checkhandle/' + twitterHandle;
+			var url = 'http://localhost:3000/users/checkhandle/' + twitterHandle;
 			var def = $q.defer();
 
 			$http({
@@ -87,7 +87,7 @@ app.factory('userservice', function ($q, $http) {
 		 * @returns {promise}
 		 */
 		checkUniqueEmailID: function (emailID) {
-			var url = 'https://twitter-proto.herokuapp.com/users/checkemail/' + emailID;
+			var url = 'http://localhost:3000/users/checkemail/' + emailID;
 			var def = $q.defer();
 
 			$http({
@@ -112,7 +112,7 @@ app.factory('userservice', function ($q, $http) {
 		 * @returns {promise}
 		 */
 		login: function (data) {
-			var url = "https://twitter-proto.herokuapp.com/auth/login";
+			var url = "http://localhost:3000/auth/login";
 			var def = $q.defer();
 			$http({
 				method: 'POST',
@@ -139,7 +139,7 @@ app.factory('userservice', function ($q, $http) {
 			var def = $q.defer();
 			$http({
 				method: 'GET',
-				url: 'https://twitter-proto.herokuapp.com/users/currentuser'
+				url: 'http://localhost:3000/users/currentuser'
 			}).then(function (result) {
 				def.resolve(result.data);
 			}, function (error) {
@@ -155,7 +155,7 @@ app.factory('userservice', function ($q, $http) {
 		 */
 		follow: function (twitterHandle) {
 			var def = $q.defer();
-			var url = "https://twitter-proto.herokuapp.com/users/follow/" + twitterHandle;
+			var url = "http://localhost:3000/users/follow/" + twitterHandle;
 			$http({
 				method: 'GET',
 				url: url
@@ -179,7 +179,7 @@ app.factory('userservice', function ($q, $http) {
 		 */
 		unfollow: function (twitterHandle) {
 			var def = $q.defer();
-			var url = "https://twitter-proto.herokuapp.com/users/unfollow/" + twitterHandle;
+			var url = "http://localhost:3000/users/unfollow/" + twitterHandle;
 			$http({
 				method: 'GET',
 				url: url
@@ -212,7 +212,7 @@ app.factory('feedservice', function ($q, $http) {
 			var def = $q.defer();
 			$http({
 				method: 'GET',
-				url: 'https://twitter-proto.herokuapp.com/feed'
+				url: 'http://localhost:3000/feed'
 			}).then(function (data) {
 				if (data.data.success) {
 					def.resolve(data.data.result);
@@ -234,7 +234,7 @@ app.factory('feedservice', function ($q, $http) {
 			var def = $q.defer();
 			$http({
 				method: 'POST',
-				url: 'https://twitter-proto.herokuapp.com/feed',
+				url: 'http://localhost:3000/feed',
 				data: {
 					"twitterText": newTweet
 				}
@@ -254,7 +254,7 @@ app.factory('feedservice', function ($q, $http) {
 			var def = $q.defer();
 			$http({
 				method: 'POST',
-				url: 'https://twitter-proto.herokuapp.com/feed/retweet/' + tweet_id
+				url: 'http://localhost:3000/feed/retweet/' + tweet_id
 			}).then(function (success) {
 				def.resolve(success);
 			}, function (error) {
@@ -351,7 +351,7 @@ app.factory('searchservice', function ($q, $http, $rootScope) {
 			var def = $q.defer();
 			$http({
 				method: 'GET',
-				url: 'https://twitter-proto.herokuapp.com/search/' + searchTerm
+				url: 'http://localhost:3000/search/' + searchTerm
 			}).then(function (result) {
 				/*$rootScope.searchFeed = null;
 				 $rootScope.userSearched = null;*/
@@ -429,7 +429,7 @@ app.controller("SearchController", ["$http", "$scope", "$window", "$rootScope", 
 		$scope.logout = function () {
 			$http({
 				method: 'GET',
-				url: 'https://twitter-proto.herokuapp.com/auth/logout'
+				url: 'http://localhost:3000/auth/logout'
 			}).then(function (result) {
 				$window.location.href = '/';
 			});
@@ -456,7 +456,7 @@ app.controller("SearchDisplayController", ["$scope", "$window", "$rootScope", "u
 		 */
 		$scope.$on("searchDataReceived", function (event, searchData) {
 			if (searchData.result === undefined) {
-				$window.location.href = 'https://twitter-proto.herokuapp.com/auth/login';
+				$window.location.href = 'http://localhost:3000/auth/login';
 			}
 			if (searchData.type == 'tweets') {
 				$scope.userSearched = null;
@@ -550,7 +550,7 @@ app.controller("MainControl", ["$scope", "$window", function ($scope, $window) {
 	 * A function that is used to redirect the user to login page if his session has expired.
 	 */
 	$scope.redirectLogin = function () {
-		$window.location.href = "https://twitter-proto.herokuapp.com/auth/login"
+		$window.location.href = "http://localhost:3000/auth/login"
 	}
 }]);
 
@@ -578,7 +578,7 @@ app.controller("UserController", ["$scope", "$window", "userservice", function (
 		 * Function that sign-ups a user into the system.
 		 */
 		userservice.signUp(data).then(function (result) {
-			$window.location.href = 'https://twitter-proto.herokuapp.com/auth/login';
+			$window.location.href = 'http://localhost:3000/auth/login';
 		}, function (error) {
 			alert("Some error occurred!");
 			//console.log("ERROR : " + error);
@@ -595,7 +595,7 @@ app.controller("UserController", ["$scope", "$window", "userservice", function (
 			"password": $scope.password
 		}
 		userservice.login(data).then(function () {
-			$window.location.href = "https://twitter-proto.herokuapp.com/home#/feed";
+			$window.location.href = "http://localhost:3000/home#/feed";
 		}, function (error) {
 			$scope.invalidPassword = true;
 			$scope.loginError = "Invalid Password";
@@ -608,7 +608,7 @@ app.controller("UserController", ["$scope", "$window", "userservice", function (
 	 * Used after user clicks logout.
 	 */
 	$scope.redirectHome = function () {
-		$window.location.href = "https://twitter-proto.herokuapp.com/";
+		$window.location.href = "http://localhost:3000/";
 	}
 
 	/**

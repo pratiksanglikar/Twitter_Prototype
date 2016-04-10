@@ -1,7 +1,7 @@
 /**
  * Created by pratiksanglikar on 25/03/16.
  */
-const MONGODBURL = "mongodb://pratik_twitter:sjsutwitter@ds019980.mlab.com:19980/twitter";
+const MONGODBURL = "mongodb://localhost:27017/twitter";
 exports.MONGODBURL = MONGODBURL;
 
 var MongoClient = require('mongodb').MongoClient;
