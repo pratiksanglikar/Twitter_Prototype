@@ -3,7 +3,6 @@
  */
 var express = require('express');
 var router = express.Router();
-var userhandler = require('../javascripts/userhandler');
 var rabbitMQClient = require("../rpc/client");
 
 /**
@@ -41,7 +40,7 @@ router.post('/login', function(req, res) {
 			}
 		}, function( error ) {
 		var finalError = error || "User not found";
-		res.render({
+		res.send({
 			"success": false,
 			"error" : finalError
 		});

@@ -14,8 +14,7 @@ var auth = require('./routes/authentication');
 var feed = require('./routes/feed');
 var search = require('./routes/search');
 var mongodbhandler = require('./javascripts/mongodbhandler');
-var userHandler = require('./javascripts/userhandler');
-
+var RabbitMQClient = require("./rpc/client");
 var app = express();
 
 // view engine setup
@@ -48,12 +47,19 @@ app.use(function(req, res, next) {
 		res.header("Cache-Control", "no-cache, no-store, must-revalidate");
 		res.header("Pragma", "no-cache");
 		res.header("Expires", 0);
-		var authPromise = userHandler.findUserForAuthentication( twitterHandle );
-		authPromise.done( function ( user ) {
-			req.user = user;
-			delete req.user.password; // delete the password from the session
-			req.session.user = user;  // refresh the session value
-			res.locals.user = user;
+		var authPromise = RabbitMQClient.request("user_queue",{type: "user_auth", twitterHandle: twitterHandle});
+		authPromise.done( function ( response ) {
+			if(response.statusCode === 200) {
+				var user = response.response;
+				req.user = user;
+				delete req.user.password; // delete the password from the session
+				req.session.user = user;  // refresh the session value
+				res.locals.user = user;
+				next();
+			} else {
+				next();
+			}
+		}, function (error) {
 			next();
 		});
 	} else {

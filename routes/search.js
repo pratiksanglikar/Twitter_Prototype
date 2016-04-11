@@ -3,8 +3,6 @@
  */
 var express = require('express');
 var router = express.Router();
-var Userhandler = require('../javascripts/userhandler');
-var FeedHandler = require('../javascripts/feedhandler');
 var Auth = require('./authentication');
 var RabbitMQClient = require("../rpc/client");
 
