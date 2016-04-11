@@ -4,7 +4,6 @@
 var express = require('express');
 var router = express.Router();
 var userhandler = require('../javascripts/userhandler');
-var PasswordManager = require('../javascripts/passwordmanager');
 var rabbitMQClient = require("../rpc/client");
 
 /**
@@ -20,25 +19,26 @@ router.get('/login', function(req, res, next) {
 router.post('/login', function(req, res) {
 	var twitterHandle = req.body.twitterHandle.trim().replace('@','');
 	var payload = {
+		"type": "login",
 		"twitterHandle" : twitterHandle,
 		"password" : req.body.password
 	};
 
 	var userPromise = rabbitMQClient.request('auth_queue', payload);
-	/*var userPromise = userhandler.findUserForAuthentication( twitterHandle ); */
-
-	userPromise.done( function( user ) {
-		//var password = PasswordManager.encryptPassword(req.body.password);
-		//if (password === user.password) {
-		//	req.session.user = user;
-			res.send({
-				"success": true
-			});
-		//} else {
-			//res.send(401, {
-			//	"success": false,
-			//	"error" : "Invalid Password!"
-			//});
+	userPromise.done( function( response ) {
+			if(response.statusCode === 200) {
+				req.session.user = response.response;
+				req.user = response.response;
+				res.send({
+					"success": true,
+					"response" : response.response
+				});
+			} else {
+				res.send({
+					"success": false,
+					"error" : response.response
+				});
+			}
 		}, function( error ) {
 		var finalError = error || "User not found";
 		res.render({
@@ -47,6 +47,7 @@ router.post('/login', function(req, res) {
 		});
 	});
 });
+
 /**
  * logouts the user from system.
  */

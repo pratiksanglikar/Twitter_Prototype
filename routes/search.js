@@ -6,6 +6,7 @@ var router = express.Router();
 var Userhandler = require('../javascripts/userhandler');
 var FeedHandler = require('../javascripts/feedhandler');
 var Auth = require('./authentication');
+var RabbitMQClient = require("../rpc/client");
 
 /**
  * searches the given term and returns the results.
@@ -13,24 +14,43 @@ var Auth = require('./authentication');
 router.get('/:searchTerm', Auth.requireLogin, function (req, res) {
 	var searchTerm = req.params.searchTerm;
 	if (searchTerm.startsWith('@')) {
-		var promise = Userhandler.findUser(searchTerm);
+		var payload = {
+			type: "find_user",
+			searchTerm: searchTerm
+		};
+		var promise = RabbitMQClient.request("user_queue", payload);
 		promise.done(function (result) {
-			var isFollowedByPromise = Userhandler.isFollowedBy( searchTerm, req.user.twitterHandle );
-			isFollowedByPromise.done( function ( isFollowed ) {
-				result.isFollowed = isFollowed.success;
-				res.send({
-					"type": "user",
-					"success": true,
-					"result": result
-				});
-			}, function( error ) {
-				res.send({
-					"type" : "user",
-					"success": false,
-					"error": error
-				});
-			});
+			if(result.statusCode === 200) {
+				console.log("user is found, checking followed by");
+				var isFollowedByPromise = RabbitMQClient.request( "user_queue", {
+					type: "is_followed",
+					ownHandle: req.user.twitterHandle,
+					theirHandle: searchTerm
+				} );
 
+				isFollowedByPromise.done( function ( isFollowed ) {
+					if(isFollowed.statusCode === 200) {
+						result.response.isFollowed = isFollowed.response;
+						res.send({
+							"type": "user",
+							"success": true,
+							"result": result.response
+						});
+					} else {
+						res.send({
+							"type" : "user",
+							"success": false,
+							"error": "Oops! Something went wrong!"
+						});
+					}
+				}, function( error ) {
+					res.send({
+						"type" : "user",
+						"success": false,
+						"error": error
+					});
+				});
+			}
 		}, function (error) {
 			res.send({
 				"type" : "user",
@@ -39,13 +59,21 @@ router.get('/:searchTerm', Auth.requireLogin, function (req, res) {
 			});
 		});
 	} else {
-		var promise = FeedHandler.searchTweetsWithHashTag(searchTerm);
+		var promise = RabbitMQClient.request("feed_queue", {type:"search_hashtag",searchTerm: searchTerm});
 		promise.done(function (result) {
-			res.send({
-				"type" : "tweets",
-				"success": true,
-				"result": result
-			});
+			if(result.statusCode === 200) {
+				res.send({
+					"type" : "tweets",
+					"success": true,
+					"result": result.response
+				});
+			} else {
+				res.send({
+					"type" : "tweets",
+					"success": false,
+					"result": result.response
+				});
+			}
 		}, function (error) {
 			res.send({
 				"type" : "tweets",

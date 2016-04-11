@@ -3,55 +3,50 @@
  */
 var express = require('express');
 var router = express.Router();
-var FeedHandler = require('../javascripts/feedhandler');
 var Auth = require('./authentication');
-var UserHandler = require('../javascripts/userhandler');
-/*var migrationTool = require("../javascripts/migratemongo");*/
+var RabbitMQClient = require("../rpc/client");
 
 /**
  * calculates the feed for given user.
  */
 router.get('/', Auth.requireLogin, function(req, res) {
 	var twitterHandle = req.user.twitterHandle;
-	var promise = FeedHandler.createFeed(twitterHandle);
-	promise.done( function ( result ) {
-		res.send({"success" : true, "result" : result });
-	}, function( error ) {
+	var payload = {
+		type: "create_feed",
+		twitterHandle: twitterHandle
+	};
+	var promise = RabbitMQClient.request("feed_queue",payload);
+	promise.done(function (response) {
+		if(response.statusCode === 200) {
+			res.send({"success" : true, "result" : response.response });
+		} else {
+			res.send(500, {"success" : false, "error" : "Some Error occurred!" });
+		}
+	}, function (error) {
 		res.send({"success" : false, "error" : error });
-	});
-});
-
-/**
- * gets the tweets of given twitterHandle
- * if the loggedInUser is following required user.
- */
-router.get('/:twitterHandle', Auth.requireLogin, function(req, res) {
-	var twitterHandle = req.user.twitterHandle;
-	var personRequested = req.params.twitterHandle;
-	twitterHandle = twitterHandle.trim().replace('@','');
-	personRequested = personRequested.trim().replace('@','');
-	var promise = UserHandler.isFollowedBy(personRequested, twitterHandle);
-	promise.done( function() {
-		var foundPromise = UserHandler.findUser( personRequested );
-		foundPromise.done( function( result ) {
-			res.send( result );
-		}, function( error ) {
-			res.send( {"success" : false, "error" : error});
-		});
-	}, function ( error ) {
-		res.send( {"success" : false, "error" : error});
 	});
 });
 
 /**
  * posts new tweet for given user.
  */
-router.post('/', Auth.requireLogin, function(req, res, next) {
+router.post('/', Auth.requireLogin, function(req, res) {
 	var twitterHandle = req.user.twitterHandle;
 	var twitterText = req.body.twitterText;
-	var postTweetPromise = FeedHandler.postTweet(twitterHandle, twitterText, req.user.firstName, req.user.lastName);
-	postTweetPromise.done( function( result ) {
-		res.send({ "success" : true });
+	var payload = {
+		type: "post_tweet",
+		twitterHandle: twitterHandle,
+		twitterText: twitterText,
+		firstName: req.user.firstName,
+		lastName: req.user.lastName
+	}
+	var postTweetPromise = RabbitMQClient.request("feed_queue", payload);
+	postTweetPromise.done( function( response ) {
+		if(response.statusCode === 200) {
+			res.send({ "success": true });
+		} else {
+			res.send({"success": false, "error": "Something went wrong!"});
+		}
 	}, function( error ) {
 		res.send({ "success" : false, "error" : error });
 	});
@@ -60,23 +55,26 @@ router.post('/', Auth.requireLogin, function(req, res, next) {
 /**
  * retweets the tweet with given tweet_id.
  */
-router.post('/retweet/:tweet_id', Auth.requireLogin, function (req, res, next) {
+router.post('/retweet/:tweet_id', Auth.requireLogin, function (req, res) {
 	var twitterHandle = req.user.twitterHandle;
 	var tweet_id = req.params.tweet_id;
-	var retweetPromise = FeedHandler.retweet( twitterHandle, tweet_id, req.user.firstName, req.user.lastName );
+	var payload = {
+		type: "retweet",
+		twitterHandle: twitterHandle,
+		tweet_id: tweet_id,
+		firstName: req.user.firstName,
+		lastName: req.user.lastName
+	};
+	var retweetPromise = RabbitMQClient.request("feed_queue", payload);
 	retweetPromise.done( function( result ) {
-		res.send({ "success" : true , "result" : result });
+		if(result.statusCode === 200) {
+			res.send({ "success" : true , "result" : result.response });
+		} else {
+			res.send({ "success" : false , "error" : result.response });
+		}
 	}, function( error ) {
 		res.send({ "success" : false, "error" : error });
 	});
 });
-
-/**
- * NOT FOR PRODUCTION. TEMPORARY FUNCTION TO MIGRATE DB FROM MYSQL TO MONGODB
- */
-/*router.get("/migrate", function (req, res) {
-	migrationTool.migrate("pratiksanglikar");
-	res.send({"Okay!":"got it!"});
-});*/
 
 module.exports = router;
