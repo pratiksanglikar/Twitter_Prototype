@@ -13,9 +13,9 @@ var users = require('./routes/users');
 var auth = require('./routes/authentication');
 var feed = require('./routes/feed');
 var search = require('./routes/search');
-var mongodbhandler = require('./javascripts/mongodbhandler');
 var RabbitMQClient = require("./rpc/client");
 var app = express();
+const MONGODBURL = "mongodb://pratik_twitter:sjsutwitter@ds019980.mlab.com:19980/twitter";
 
 // view engine setup
 app.set('port', 3000);
@@ -37,7 +37,7 @@ app.use(session({
 	duration: 30 * 60 * 1000,
 	activeDuration: 5 * 60 * 1000,
 	store: new mongoStore({
-		url: mongodbhandler.MONGODBURL
+		url: MONGODBURL
 	})
 }));
 
@@ -104,11 +104,8 @@ app.use(function(err, req, res, next) {
   });
 });
 
-mongodbhandler.connect(mongodbhandler.MONGODBURL, function(){
-	console.log('Connected to mongo at: ' + mongodbhandler.MONGODBURL);
-	http.createServer(app).listen(app.get('port'), function() {
-		console.log("Server started on port : " , app.get("port"));
-	});
+http.createServer(app).listen(app.get('port'), function() {
+	console.log("Server started on port : " , app.get("port"));
 });
 
 module.exports = app;
