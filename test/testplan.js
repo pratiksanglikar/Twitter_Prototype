@@ -6,22 +6,8 @@ var request = require('request'),
 	http = require("http");
 
 describe("url tests", function() {
-
-	it("Should return login page", function(done) {
-		http.get("http://localhost:3000/auth/login", function(res) {
-			assert.equal(200, res.statusCode);
-			done();
-		});
-	});
-
-	it("Should not return the home page if the url is wrong", function(done){
-		http.get("http://localhost:3000/negativetest", function(res) {
-			assert.equal(404, res.statusCode);
-			done();
-		});
-	});
-
-	it("Should authenticate user on correct twitterHandle password combination", function(done) {
+	
+	beforeEach(function(done) {
 		request.post(
 			"http://localhost:3000/auth/login",
 			{ form:
@@ -31,18 +17,29 @@ describe("url tests", function() {
 				}
 			},
 			function (error, response) {
-				var responseJSON = JSON.parse(response.body);
-				assert.equal(true, responseJSON.success);
 				done();
 			}
 		);
 	});
 
-	it("Should not authenticate user on incorrect password for a twitterHandle", function (done) {
+	it("Should redirect to login page", function(done) {
+		http.get("http://localhost:3000/feed", function(res) {
+			assert.equal(302, res.statusCode);
+			done();
+		});
+	});
+
+	it("Should return status 404 if incorrect url is specified", function(done){
+		http.get("http://localhost:3000/negativetest", function(res) {
+			assert.equal(404, res.statusCode);
+			done();
+		});
+	});
+
+	it("Should NOT authenticate the user on incorrect twitterHandle password combination", function(done) {
 		request.post(
 			"http://localhost:3000/auth/login",
-			{
-				form:
+			{ form:
 				{
 					twitterHandle: "pratiksanglikar",
 					password:"pratik12345"
@@ -56,11 +53,21 @@ describe("url tests", function() {
 		);
 	});
 
-	it("Should return login page if user is not signed in", function (done) {
+	it("Should not search tweets if the user is not logged in", function (done) {
 		request.get(
-			"http://localhost:3000/feed",
+			"http://localhost:3000/search/@pratiksanglikar",
 			function (error, response) {
 				assert.equal(200, response.statusCode);
+				done();
+			}
+		);
+	});
+
+	it("Shourld not post the tweet if the user is not signed in", function (done) {
+		request.post(
+			"http://localhost:3000/feed",
+			function (error, response) {
+				assert.equal(302, response.statusCode);
 				done();
 			}
 		);
